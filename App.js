@@ -1,107 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar, PermissionsAndroid, Alert, StyleSheet, Text, View, Button } from 'react-native';
-import { Bluetooth, Speech, Permissions, Contacts, Linking } from 'expo';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StyleSheet, Text, View, Image } from 'react-native';
+import { BleManager } from 'react-native-ble-plx';
+import btlogo from './assets/bluetooth-logo.png';
+
+export const manager = new BleManager();
 
 export default function App() {
-  const [bluetoothConnected, setBluetoothConnected] = useState(false);
+  const scanAndConnect = () => {
+    console.log("scanAndConnect");
+    manager.startDeviceScan(null, null, (error, device) => {
+      if (error) {
+          // Handle error (scanning will be stopped automatically)
+          return
+      }
 
-  useEffect(() => {
-    // Check and request necessary permissions
-    async function checkPermissions() {
-      try {
-        // Request Bluetooth permission
-        const bluetoothPermission = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-        if (bluetoothPermission.status !== 'granted') {
-          Alert.alert('Bluetooth Permission', 'Bluetooth permission denied. The app may not work correctly.');
-        }
-  
-        // Add event listener for Bluetooth connection
-        Bluetooth.addListener('connectionStatusChanged', ({ connected }) => {
-          setBluetoothConnected(connected);
-          if (!connected) {
-            sendEmergencyMessage();
-            callEmergencyContact();
+      console.log("Found",device.name, device.localName);
+
+      // Check if it is a device you are looking for based on advertisement data
+      // or other criteria.
+      // if (device.name === 'TI BLE Sensor Tag' || 
+      //     device.name === 'SensorTag') {
+          
+      //     // Stop scanning as it's not necessary if you are scanning for one device.
+      //     manager.stopDeviceScan();
+
+      //     // Proceed with connection.
+      // }
+    });
+  }
+
+  React.useEffect(() => {
+    console.log("Setting up initial manager subscription");
+    manager.onStateChange((state) => {
+      const subscription = manager.onStateChange((state) => {
+          if (state === 'PoweredOn') {
+              scanAndConnect();
+              subscription.remove();
           }
-        });
-  
-        // Check initial Bluetooth connection status
-        const connected = await Bluetooth.isConnectedAsync();
-        setBluetoothConnected(connected);
-  
-      } catch (error) {
-        console.error('Error checking permissions:', error);
-      }
-    }
-  
-    checkPermissions();
-  
-    // Clean up event listeners when component unmounts
-    return () => {
-      if (Bluetooth) {
-        Bluetooth.removeAllListeners();
-      }
-    };
-  
-  }, []);
-  
-
-  // Function to start speech recognition
-  const startSpeechRecognition = async () => {
-    try {
-      const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-      if (status !== 'granted') {
-        Alert.alert('Speech Recognition Permission', 'Speech recognition permission denied. The app may not work correctly.');
-        return;
-      }
-
-      const result = await Speech.startListeningAsync();
-      if (result.error) {
-        Alert.alert('Speech Recognition Error', 'Failed to transcribe speech.');
-        return;
-      }
-
-      // Use Google API to search for answers based on the transcribed speech (not implemented here)
-      console.log('Transcribed speech:', result);
-    } catch (error) {
-      console.error('Error starting speech recognition:', error);
-    }
-  };
-
-  // Function to send an emergency message
-  const sendEmergencyMessage = async () => {
-    try {
-      const emergencyContact = 'YOUR_EMERGENCY_CONTACT_NUMBER';
-      const message = 'Emergency: Driver is in trouble!';
-      await Contacts.sendMessageAsync([emergencyContact], message);
-      console.log('Emergency message sent successfully');
-    } catch (error) {
-      console.error('Error sending emergency message:', error);
-    }
-  };
-
-  // Function to call emergency contact
-  const callEmergencyContact = async () => {
-    try {
-      const emergencyContact = 'YOUR_EMERGENCY_CONTACT_NUMBER';
-      await Linking.openURL(`tel:${emergencyContact}`);
-    } catch (error) {
-      console.error('Error calling emergency contact:', error);
-    }
-  };
+      }, true);
+      return () => subscription.remove();
+    });
+  }, [manager]);
 
   return (
-    <>
+    <View style={styles.container}>
+      <Image source={btlogo} style={styles.logoImage}/>
+      <Text>React Native Bluetooth Example</Text>
       <StatusBar style="auto" />
-      <View style={styles.container}>
-        <Text>BrainTec</Text>
-        {bluetoothConnected ? (
-          <Text style={styles.connected}>Bluetooth headset connected</Text>
-        ) : (
-          <Text style={styles.disconnected}>Bluetooth headset disconnected</Text>
-        )}
-        <Button title="Use Google Assistant" onPress={startSpeechRecognition} />
-      </View>
-    </>
+    </View>
   );
 }
 
@@ -112,12 +59,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  connected: {
-    color: 'green',
-    marginTop: 10,
-  },
-  disconnected: {
-    color: 'red',
-    marginTop: 10,
-  },
+  logoImage: {
+    width: 100,
+    height: 132,
+    resizeMode: 'stretch'
+  }
 });
