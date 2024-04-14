@@ -1,6 +1,5 @@
 package com.example.braintec_v4;
 
-
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,9 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.telephony.PhoneStateListener;
-import android.telephony.SmsManager;
-import android.telephony.TelephonyManager;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,27 +29,13 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction();
             if (action != null) {
                 if (action.equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
-                    startPhoneStateListener();
                     Toast.makeText(context, "Device Connected Successfully", Toast.LENGTH_SHORT).show();
                     updateStatusText(statusConnected);
+                    connectionStatusTextView.setTextColor(getResources().getColor(R.color.colorConnected));
                 } else if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
-                    stopPhoneStateListener();
                     updateStatusText(statusNotConnected);
+                    connectionStatusTextView.setTextColor(getResources().getColor(R.color.colorNotConnected));
                 }
-            }
-        }
-    };
-
-    private PhoneStateListener phoneStateListener = new PhoneStateListener() {
-        @Override
-        public void onCallStateChanged(int state, String phoneNumber) {
-            super.onCallStateChanged(state, phoneNumber);
-            switch (state) {
-                case TelephonyManager.CALL_STATE_RINGING:
-                    if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothAdapter.getConnectionState() == BluetoothAdapter.STATE_CONNECTED) {
-                        sendTextMessage(phoneNumber);
-                    }
-                    break;
             }
         }
     };
@@ -65,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         connectionStatusTextView = findViewById(R.id.connectionStatusTextView);
         connectionStatusTextView.setText("Status: " + statusNotConnected);
+        connectionStatusTextView.setTextColor(getResources().getColor(R.color.colorNotConnected));
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
@@ -90,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(bluetoothReceiver);
-        stopPhoneStateListener();
     }
 
     private void requestLocationPermission() {
@@ -113,31 +95,5 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateStatusText(String status) {
         connectionStatusTextView.setText("Status: " + status);
-    }
-
-    private void startPhoneStateListener() {
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        if (telephonyManager != null) {
-            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-        }
-    }
-
-    private void stopPhoneStateListener() {
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        if (telephonyManager != null) {
-            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-        }
-    }
-
-    private void sendTextMessage(String phoneNumber) {
-        String message = "User is driving, call back later.";
-        try {
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(phoneNumber, null, message, null, null);
-            Toast.makeText(this, "Message sent to " + phoneNumber, Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
     }
 }

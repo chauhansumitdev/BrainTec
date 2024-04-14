@@ -12,7 +12,7 @@
         android:text="Status: Not Connected"
         android:textSize="18sp"
         android:layout_centerHorizontal="true"
-        android:textColor="@android:color/black"
+        android:textColor="@color/colorNotConnected"
         android:textStyle="bold"/>
 
 </RelativeLayout>
