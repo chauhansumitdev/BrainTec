@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,9 +11,51 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Status: Not Connected"
-        android:textSize="18sp"
-        android:layout_centerHorizontal="true"
+        android:textSize="22sp"
+        android:layout_centerInParent="true"
         android:textColor="@color/colorNotConnected"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:layout_margin="20px"/>
+
+    <TextView
+        android:id="@+id/voiceAssistanceTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/connectionStatusTextView"
+        android:layout_centerInParent="true"
+        android:text="Voice Assistance: Off"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_margin="20px" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/braintec"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/connectionStatusTextView" />
+
+    <TextView
+        android:id="@+id/muteCallsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/voiceAssistanceTextView"
+        android:layout_centerHorizontal="true"
+        android:text="Mute Calls: Off"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_margin="20px"/>
+
+    <TextView
+        android:id="@+id/emergencyMsgTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/muteCallsTextView"
+        android:layout_centerHorizontal="true"
+        android:text="Emergency Msg: Off"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_margin="10dp"/>
 
 </RelativeLayout>
