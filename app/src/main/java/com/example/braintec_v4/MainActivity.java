@@ -1,17 +1,24 @@
 package com.example.braintec_v4;
+
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.telephony.SmsManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,11 +59,7 @@ public class MainActivity extends AppCompatActivity {
                     connectionStatusTextView.setTextColor(getResources().getColor(R.color.colorNotConnected));
                     updateMuteCallsText(false); // Unmute calls when disconnected
                     updateEmergencyMsgText(false); // Disable emergency message when disconnected
-                    if (checkPermission(Manifest.permission.SEND_SMS)) {
-                        sendEmergencyMessage(emergencyContactNumber);
-                    } else {
-                        requestSendSmsPermission();
-                    }
+                    showEmergencyMessagePopup();
                 }
             }
         }
@@ -175,5 +178,39 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Failed to send emergency message.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void showEmergencyMessagePopup() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.popup_layout, null);
+        dialogBuilder.setView(dialogView);
+
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+
+        final Button cancelButton = dialogView.findViewById(R.id.cancelButton);
+
+        new CountDownTimer(10000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                // You can monitor the countdown here if needed
+            }
+
+            public void onFinish() {
+                if (alertDialog.isShowing()) {
+                    alertDialog.dismiss();
+                    sendEmergencyMessage(emergencyContactNumber);
+                }
+            }
+
+        }.start();
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+            }
+        });
     }
 }
