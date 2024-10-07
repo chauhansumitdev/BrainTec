@@ -3,3 +3,6 @@
 # BrainTec - A Safety First App
 
 > 6th Semester Minor Project
+
+Latest Version : [Click Here](https://github.com/chauhansumitdev/BrainTec-v2)
+
